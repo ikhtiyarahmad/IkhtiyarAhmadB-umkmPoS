@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, ShoppingBag, Search, X, Plus, Minus, Send, Store, ChevronRight, Star } from 'lucide-react';
+import { ShoppingCart, ShoppingBag, Search, X, Plus, Minus, Send, Store, ChevronRight, Star, CreditCard, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MOCK_PRODUCTS } from '../mockData';
 import { CartItem, Product } from '../types';
@@ -42,8 +42,29 @@ export default function Webstore() {
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
-  const handleCheckout = () => {
-    const phoneNumber = '6281234567890'; // Ganti dengan nomor WA toko
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isReceiptOpen, setIsReceiptOpen] = useState(false);
+  const [lastOrder, setLastOrder] = useState<{ items: CartItem[], total: number, id: string } | null>(null);
+
+  const handleTransferPayment = () => {
+    setIsPaymentModalOpen(true);
+  };
+
+  const confirmPayment = () => {
+    const orderId = `ORD-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+    setLastOrder({ items: cart, total: subtotal, id: orderId });
+    setIsPaymentModalOpen(false);
+    setIsCartOpen(false);
+    setIsReceiptOpen(true);
+    setCart([]);
+  };
+
+  const printReceipt = () => {
+    window.print();
+  };
+
+  const handleCheckoutWA = () => {
+    const phoneNumber = '6281234567890';
     const message = `Halo Toko Berkah Jaya, saya ingin memesan:\n\n` +
       cart.map(item => `- ${item.name} (${item.quantity}x) - Rp ${(item.price * item.quantity).toLocaleString('id-ID')}`).join('\n') +
       `\n\nTotal: Rp ${subtotal.toLocaleString('id-ID')}\n\nMohon info selanjutnya untuk pembayaran. Terima kasih!`;
@@ -312,24 +333,167 @@ export default function Webstore() {
                 )}
               </div>
 
-              <div className="p-8 bg-gray-50 border-t border-gray-100 space-y-6">
+              <div className="p-8 bg-gray-50 border-t border-gray-100 space-y-4">
                 <div className="flex justify-between items-end">
                   <div>
                     <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-1">Total Pembayaran</p>
                     <p className="text-3xl font-black text-gray-900">Rp {subtotal.toLocaleString('id-ID')}</p>
                   </div>
                 </div>
-                <button 
-                  onClick={handleCheckout}
-                  disabled={cart.length === 0}
-                  className="w-full bg-green-600 text-white py-5 rounded-[2rem] font-bold text-lg flex items-center justify-center gap-3 shadow-xl shadow-green-100 hover:bg-green-700 transition-all disabled:opacity-50 active:scale-95"
-                >
-                  <Send className="w-6 h-6" />
-                  Pesan via WhatsApp
-                </button>
+                
+                <div className="grid grid-cols-1 gap-3">
+                  <button 
+                    onClick={handleTransferPayment}
+                    disabled={cart.length === 0}
+                    className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-3 shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all disabled:opacity-50 active:scale-95"
+                  >
+                    Bayar via Transfer
+                  </button>
+                  <button 
+                    onClick={handleCheckoutWA}
+                    disabled={cart.length === 0}
+                    className="w-full bg-green-600 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-3 shadow-xl shadow-green-100 hover:bg-green-700 transition-all disabled:opacity-50 active:scale-95 text-sm"
+                  >
+                    <Send className="w-5 h-5" />
+                    Pesan via WhatsApp
+                  </button>
+                </div>
               </div>
             </motion.div>
           </>
+        )}
+      </AnimatePresence>
+
+      {/* Payment Modal */}
+      <AnimatePresence>
+        {isPaymentModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setIsPaymentModalOpen(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              className="relative bg-white w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl"
+            >
+              <div className="p-8 text-center">
+                <div className="w-20 h-20 bg-indigo-50 rounded-3xl flex items-center justify-center text-indigo-600 mx-auto mb-6">
+                  <CreditCard className="w-10 h-10" />
+                </div>
+                <h3 className="text-2xl font-black text-gray-900 mb-2">Instruksi Pembayaran</h3>
+                <p className="text-gray-500 mb-8">Silakan transfer sesuai nominal ke rekening berikut:</p>
+                
+                <div className="bg-gray-50 rounded-3xl p-6 mb-8 text-left space-y-4">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-400 font-bold uppercase tracking-widest">Bank</span>
+                    <span className="text-gray-900 font-black">BCA (Bank Central Asia)</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-400 font-bold uppercase tracking-widest">No. Rekening</span>
+                    <span className="text-gray-900 font-black">123 - 4567 - 890</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-400 font-bold uppercase tracking-widest">Atas Nama</span>
+                    <span className="text-gray-900 font-black">Toko Berkah Jaya</span>
+                  </div>
+                  <div className="pt-4 border-t border-gray-200 flex justify-between items-center">
+                    <span className="text-gray-400 font-bold text-xs uppercase tracking-widest">Total Bayar</span>
+                    <span className="text-2xl font-black text-indigo-600">Rp {subtotal.toLocaleString('id-ID')}</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <button 
+                    onClick={() => setIsPaymentModalOpen(false)}
+                    className="py-4 rounded-2xl font-bold text-gray-400 hover:bg-gray-50 transition-all"
+                  >
+                    Batal
+                  </button>
+                  <button 
+                    onClick={confirmPayment}
+                    className="btn-primary"
+                  >
+                    Konfirmasi Bayar
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* User Receipt Modal */}
+      <AnimatePresence>
+        {isReceiptOpen && lastOrder && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 no-print-bg">
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/80 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }}
+              className="relative bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl print:shadow-none print:w-full print:max-w-none print:rounded-none overflow-hidden"
+              id="print-receipt"
+            >
+              <div className="p-10">
+                <div className="text-center mb-10">
+                  <div className="w-16 h-16 bg-green-500 rounded-2xl flex items-center justify-center text-white mx-auto mb-6 print:hidden">
+                    <Star className="w-8 h-8 fill-white" />
+                  </div>
+                  <h2 className="text-2xl font-black text-gray-900 uppercase">Toko Berkah Jaya</h2>
+                  <p className="text-sm text-gray-400 font-bold uppercase tracking-[0.2em] mt-1">Struk Pembayaran Sah</p>
+                </div>
+
+                <div className="border-t border-b border-dashed border-gray-200 py-6 mb-8 space-y-3">
+                  <div className="flex justify-between text-xs font-bold text-gray-400 uppercase tracking-widest">
+                    <span>ID Pesanan</span>
+                    <span className="text-gray-900">#{lastOrder.id}</span>
+                  </div>
+                  <div className="flex justify-between text-xs font-bold text-gray-400 uppercase tracking-widest">
+                    <span>Tanggal</span>
+                    <span className="text-gray-900">{new Date().toLocaleString('id-ID')}</span>
+                  </div>
+                </div>
+
+                <div className="space-y-4 mb-10">
+                  {lastOrder.items.map(item => (
+                    <div key={item.id} className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <p className="font-bold text-gray-900">{item.name}</p>
+                        <p className="text-xs text-gray-400">{item.quantity} x Rp {item.price.toLocaleString('id-ID')}</p>
+                      </div>
+                      <p className="font-bold text-gray-900">Rp {(item.price * item.quantity).toLocaleString('id-ID')}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="bg-gray-50 rounded-3xl p-8 mb-10">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm text-gray-400 font-bold underline underline-offset-4 uppercase tracking-widest">Total Bersih</span>
+                    <span className="text-3xl font-black text-gray-900">Rp {lastOrder.total.toLocaleString('id-ID')}</span>
+                  </div>
+                  <p className="text-[10px] text-center text-gray-400 uppercase tracking-[0.2em] mt-6">Terima kasih atas pesanan Anda!</p>
+                </div>
+
+                <div className="flex gap-4 print:hidden">
+                  <button 
+                    onClick={() => setIsReceiptOpen(false)}
+                    className="flex-1 py-4 bg-gray-100 rounded-2xl font-bold text-gray-500 hover:bg-gray-200"
+                  >
+                    Tutup
+                  </button>
+                  <button 
+                    onClick={printReceipt}
+                    className="flex-1 bg-indigo-600 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2"
+                  >
+                    <Download className="w-5 h-5" />
+                    Cetak Struk
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 

@@ -6,6 +6,7 @@ import Products from './pages/Products';
 import PoS from './pages/PoS';
 import History from './pages/History';
 import Webstore from './pages/Webstore';
+import Reports from './pages/Reports';
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
           <Route path="products" element={<Products />} />
           <Route path="pos" element={<PoS />} />
           <Route path="history" element={<History />} />
+          <Route path="reports" element={<Reports />} />
         </Route>
       </Routes>
     </BrowserRouter>

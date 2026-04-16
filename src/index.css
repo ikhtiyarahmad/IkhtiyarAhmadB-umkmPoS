@@ -11,6 +11,28 @@
   }
 }
 
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #print-receipt, #print-receipt *, #admin-receipt, #admin-receipt * {
+    visibility: visible;
+  }
+  #print-receipt, #admin-receipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    border: none;
+  }
+  .no-print-bg {
+    background: white !important;
+  }
+}
+
 @layer components {
   .premium-card {
     @apply bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-gray-200/50 transition-all duration-500;

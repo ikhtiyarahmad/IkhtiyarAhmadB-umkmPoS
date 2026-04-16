@@ -7,6 +7,23 @@ import { motion, AnimatePresence } from 'motion/react';
 export default function PoS() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isReceiptOpen, setIsReceiptOpen] = useState(false);
+  const [lastOrder, setLastOrder] = useState<{ items: CartItem[], total: number, id: string } | null>(null);
+
+  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const tax = subtotal * 0.1;
+  const total = subtotal + tax;
+
+  const processPayment = () => {
+    const orderId = `PoS-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+    setLastOrder({ items: cart, total: total, id: orderId });
+    setIsReceiptOpen(true);
+    setCart([]);
+  };
+
+  const printReceipt = () => {
+    window.print();
+  };
 
   const addToCart = (product: Product) => {
     setCart(prev => {
@@ -33,10 +50,6 @@ export default function PoS() {
       return item;
     }));
   };
-
-  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const tax = subtotal * 0.1;
-  const total = subtotal + tax;
 
   const filteredProducts = MOCK_PRODUCTS.filter(p => 
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -190,12 +203,76 @@ export default function PoS() {
 
           <button 
             disabled={cart.length === 0}
+            onClick={processPayment}
             className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all disabled:opacity-50 disabled:shadow-none"
           >
             Proses Pembayaran
           </button>
         </div>
       </div>
+
+      {/* Admin Receipt Modal */}
+      <AnimatePresence>
+        {isReceiptOpen && lastOrder && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-6">
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/80 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }}
+              className="relative bg-white w-full max-w-sm rounded-[2rem] shadow-2xl p-8 overflow-hidden"
+              id="admin-receipt"
+            >
+              <div className="text-center mb-8">
+                <h2 className="text-xl font-black text-gray-900 uppercase">BERKAH JAYA</h2>
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">ADMIN PoS RECEIPT</p>
+              </div>
+
+              <div className="border-y border-dashed border-gray-200 py-4 mb-6 space-y-2 text-xs font-medium">
+                <div className="flex justify-between">
+                  <span className="text-gray-400 uppercase">OrderID</span>
+                  <span className="text-gray-900">#{lastOrder.id}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400 uppercase">Waktu</span>
+                  <span className="text-gray-900">{new Date().toLocaleTimeString('id-ID')}</span>
+                </div>
+              </div>
+
+              <div className="space-y-3 mb-8">
+                {lastOrder.items.map(item => (
+                  <div key={item.id} className="flex justify-between text-sm">
+                    <span className="text-gray-900 font-medium">{item.name} x{item.quantity}</span>
+                    <span className="font-bold">Rp {(item.price * item.quantity).toLocaleString('id-ID')}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex justify-between items-center mb-8 pt-4 border-t border-gray-100">
+                <span className="text-sm font-black text-gray-900">TOTAL</span>
+                <span className="text-xl font-black text-indigo-600">Rp {lastOrder.total.toLocaleString('id-ID')}</span>
+              </div>
+
+              <div className="flex gap-2 print:hidden">
+                <button 
+                  onClick={() => setIsReceiptOpen(false)}
+                  className="flex-1 py-3 bg-gray-100 rounded-xl font-bold text-gray-500 hover:bg-gray-200"
+                >
+                  Tutup
+                </button>
+                <button 
+                  onClick={printReceipt}
+                  className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2"
+                >
+                  <Banknote className="w-4 h-4" />
+                  Cetak
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
