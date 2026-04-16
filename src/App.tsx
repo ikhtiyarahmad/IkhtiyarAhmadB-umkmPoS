@@ -5,12 +5,17 @@ import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import PoS from './pages/PoS';
 import History from './pages/History';
+import Webstore from './pages/Webstore';
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Layout />}>
+        {/* Public Webstore */}
+        <Route path="/" element={<Webstore />} />
+
+        {/* Admin Dashboard */}
+        <Route path="/admin" element={<Layout />}>
           <Route index element={<Dashboard />} />
           <Route path="products" element={<Products />} />
           <Route path="pos" element={<PoS />} />

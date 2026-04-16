@@ -17,10 +17,10 @@ interface SidebarProps {
 }
 
 const menuItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-  { icon: Package, label: 'Kelola Produk', path: '/products' },
-  { icon: ShoppingCart, label: 'Kasir/PoS', path: '/pos' },
-  { icon: History, label: 'Riwayat Transaksi', path: '/history' },
+  { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
+  { icon: Package, label: 'Kelola Produk', path: '/admin/products' },
+  { icon: ShoppingCart, label: 'Kasir/PoS', path: '/admin/pos' },
+  { icon: History, label: 'Riwayat Transaksi', path: '/admin/history' },
 ];
 
 export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
