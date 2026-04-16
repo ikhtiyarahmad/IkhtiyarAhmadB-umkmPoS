@@ -1,4 +1,4 @@
-import { Product, Transaction } from './types';
+import { Product, Transaction, Supplier } from './types';
 
 export const MOCK_PRODUCTS: Product[] = [
   {
@@ -76,5 +76,35 @@ export const MOCK_TRANSACTIONS: Transaction[] = [
     ],
     total: 120000,
     paymentMethod: 'qris'
+  }
+];
+
+export const MOCK_SUPPLIERS: Supplier[] = [
+  {
+    id: 'SUP-001',
+    name: 'Petani Kopi Nusantara',
+    contactPerson: 'Bpk. Ahmad Suherman',
+    phone: '0812-3456-7891',
+    email: 'ahmad@kopinusantara.com',
+    address: 'Takengon, Aceh Tengah',
+    category: 'Minuman'
+  },
+  {
+    id: 'SUP-002',
+    name: 'Tempe Lestari Mandiri',
+    contactPerson: 'Ibu Siti Aminah',
+    phone: '0813-9876-5432',
+    email: 'lestari@tempe.id',
+    address: 'Malang, Jawa Timur',
+    category: 'Makanan Ringan'
+  },
+  {
+    id: 'SUP-003',
+    name: 'Madu Rimba Indonesia',
+    contactPerson: 'Krisna Bayu',
+    phone: '0811-2233-4455',
+    email: 'krisna@madurimba.co.id',
+    address: 'Sumbawa, NTB',
+    category: 'Kesehatan'
   }
 ];

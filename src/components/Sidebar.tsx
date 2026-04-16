@@ -8,7 +8,8 @@ import {
   Store,
   ChevronLeft,
   ChevronRight,
-  BarChart3
+  BarChart3,
+  Truck
 } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -23,6 +24,7 @@ const menuItems = [
   { icon: ShoppingCart, label: 'Kasir/PoS', path: '/admin/pos' },
   { icon: History, label: 'Riwayat Transaksi', path: '/admin/history' },
   { icon: BarChart3, label: 'Laporan', path: '/admin/reports' },
+  { icon: Truck, label: 'Supplier', path: '/admin/suppliers' },
 ];
 
 export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
