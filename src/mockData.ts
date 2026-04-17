@@ -1,10 +1,18 @@
-import { Product, Transaction, Supplier } from './types';
+import { Product, Transaction, Supplier, AppSettings } from './types';
+
+export const DEFAULT_SETTINGS: AppSettings = {
+  appName: 'Berkah Jaya UMKM',
+  appDescription: 'Solusi Digital Terbaik untuk UMKM Lokal',
+  marginType: 'percentage',
+  marginValue: 20
+};
 
 export const MOCK_PRODUCTS: Product[] = [
   {
     id: '1',
     name: 'Kopi Gayo 250g',
-    price: 65000,
+    purchasePrice: 50000,
+    sellingPrice: 65000,
     stock: 24,
     category: 'Minuman',
     image: 'https://images.unsplash.com/photo-1559056199-19158c482788?auto=format&fit=crop&w=800&q=80',
@@ -13,7 +21,8 @@ export const MOCK_PRODUCTS: Product[] = [
   {
     id: '2',
     name: 'Keripik Tempe Rejeki',
-    price: 15000,
+    purchasePrice: 12000,
+    sellingPrice: 15000,
     stock: 50,
     category: 'Makanan Ringan',
     image: 'https://images.unsplash.com/photo-1621262100021-3e4b7b2fb0a7?auto=format&fit=crop&w=800&q=80',
@@ -22,7 +31,8 @@ export const MOCK_PRODUCTS: Product[] = [
   {
     id: '3',
     name: 'Madu Hutan Asli 500ml',
-    price: 120000,
+    purchasePrice: 100000,
+    sellingPrice: 120000,
     stock: 12,
     category: 'Kesehatan',
     image: 'https://images.unsplash.com/photo-1471943311424-646960669fbc?auto=format&fit=crop&w=800&q=80',
@@ -31,7 +41,8 @@ export const MOCK_PRODUCTS: Product[] = [
   {
     id: '4',
     name: 'Sambal Bawang Pedas',
-    price: 25000,
+    purchasePrice: 20000,
+    sellingPrice: 25000,
     stock: 30,
     category: 'Bumbu',
     image: 'https://images.unsplash.com/photo-1455619411447-36037384b68e?auto=format&fit=crop&w=800&q=80',
@@ -40,7 +51,8 @@ export const MOCK_PRODUCTS: Product[] = [
   {
     id: '5',
     name: 'Teh Melati Premium',
-    price: 35000,
+    purchasePrice: 28000,
+    sellingPrice: 35000,
     stock: 15,
     category: 'Minuman',
     image: 'https://images.unsplash.com/photo-1594631252845-29fc458631b6?auto=format&fit=crop&w=800&q=80',
@@ -49,7 +61,8 @@ export const MOCK_PRODUCTS: Product[] = [
   {
     id: '6',
     name: 'Kue Kering Nastar',
-    price: 85000,
+    purchasePrice: 70000,
+    sellingPrice: 85000,
     stock: 20,
     category: 'Makanan Ringan',
     image: 'https://images.unsplash.com/photo-1590080875515-8a3a8dc3605e?auto=format&fit=crop&w=800&q=80',

@@ -9,9 +9,14 @@ import {
   ChevronLeft,
   ChevronRight,
   BarChart3,
-  Truck
+  Truck,
+  Settings as SettingsIcon,
+  Globe,
+  ArrowLeft
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { AppSettings } from '../types';
+import { DEFAULT_SETTINGS } from '../mockData';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -25,9 +30,26 @@ const menuItems = [
   { icon: History, label: 'Riwayat Transaksi', path: '/admin/history' },
   { icon: BarChart3, label: 'Laporan', path: '/admin/reports' },
   { icon: Truck, label: 'Supplier', path: '/admin/suppliers' },
+  { icon: SettingsIcon, label: 'Pengaturan', path: '/admin/settings' },
 ];
 
 export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
+  const [settings] = React.useState<AppSettings>(() => {
+    const saved = localStorage.getItem('app_settings');
+    return saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
+  });
+
+  React.useEffect(() => {
+    const handleSettingsUpdate = () => {
+      const saved = localStorage.getItem('app_settings');
+      if (saved) setSettings(JSON.parse(saved));
+    };
+    window.addEventListener('settings_updated', handleSettingsUpdate);
+    return () => window.removeEventListener('settings_updated', handleSettingsUpdate);
+  }, []);
+
+  const [currentSettings, setSettings] = React.useState(settings);
+
   return (
     <motion.aside
       initial={false}
@@ -43,15 +65,33 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
             <motion.span 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="font-bold text-xl text-gray-900 whitespace-nowrap"
+              className="font-bold text-xl text-gray-900 whitespace-nowrap overflow-hidden text-ellipsis"
             >
-              UMKM Kita
+              {currentSettings.appName}
             </motion.span>
           )}
         </div>
       </div>
 
-      <nav className="flex-1 px-4 space-y-2 mt-4">
+      <nav className="flex-1 px-4 space-y-2 mt-4 overflow-y-auto">
+        <div className="pb-4 mb-4 border-b border-gray-100">
+          <NavLink
+            to="/"
+            className="flex items-center gap-4 p-3 rounded-xl transition-all duration-200 group text-indigo-600 hover:bg-indigo-50"
+          >
+            <ArrowLeft className="w-6 h-6 flex-shrink-0" />
+            {isOpen && (
+              <motion.span
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="font-bold whitespace-nowrap"
+              >
+                Ke Webstore
+              </motion.span>
+            )}
+          </NavLink>
+        </div>
+
         {menuItems.map((item) => (
           <NavLink
             key={item.path}

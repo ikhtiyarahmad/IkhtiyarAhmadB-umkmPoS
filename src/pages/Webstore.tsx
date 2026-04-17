@@ -1,16 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingCart, ShoppingBag, Search, X, Plus, Minus, Send, Store, ChevronRight, Star, CreditCard, Download } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { MOCK_PRODUCTS } from '../mockData';
-import { CartItem, Product } from '../types';
+import { MOCK_PRODUCTS, DEFAULT_SETTINGS } from '../mockData';
+import { AppSettings, CartItem, Product } from '../types';
 
 export default function Webstore() {
+  const [settings] = useState<AppSettings>(() => {
+    const saved = localStorage.getItem('app_settings');
+    return saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
+  });
+
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Semua');
 
   const categories = ['Semua', ...Array.from(new Set(MOCK_PRODUCTS.map(p => p.category)))];
+
+  const calculateSellingPrice = (purchasePrice: number) => {
+    return settings.marginType === 'percentage'
+      ? purchasePrice * (1 + settings.marginValue / 100)
+      : purchasePrice + settings.marginValue;
+  };
 
   const addToCart = (product: Product) => {
     setCart(prev => {
@@ -39,7 +51,7 @@ export default function Webstore() {
     setCart(prev => prev.filter(item => item.id !== id));
   };
 
-  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const subtotal = cart.reduce((sum, item) => sum + (calculateSellingPrice(item.purchasePrice) * item.quantity), 0);
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -65,8 +77,8 @@ export default function Webstore() {
 
   const handleCheckoutWA = () => {
     const phoneNumber = '6281234567890';
-    const message = `Halo Toko Berkah Jaya, saya ingin memesan:\n\n` +
-      cart.map(item => `- ${item.name} (${item.quantity}x) - Rp ${(item.price * item.quantity).toLocaleString('id-ID')}`).join('\n') +
+    const message = `Halo ${settings.appName}, saya ingin memesan:\n\n` +
+      cart.map(item => `- ${item.name} (${item.quantity}x) - Rp ${(calculateSellingPrice(item.purchasePrice) * item.quantity).toLocaleString('id-ID')}`).join('\n') +
       `\n\nTotal: Rp ${subtotal.toLocaleString('id-ID')}\n\nMohon info selanjutnya untuk pembayaran. Terima kasih!`;
     
     const encodedMessage = encodeURIComponent(message);
@@ -88,7 +100,7 @@ export default function Webstore() {
             <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center">
               <Store className="text-white w-6 h-6" />
             </div>
-            <span className="text-xl font-black tracking-tight text-gray-900">BERKAH JAYA</span>
+            <span className="text-xl font-black tracking-tight text-gray-900 uppercase">{settings.appName}</span>
           </div>
 
           <div className="hidden md:flex items-center gap-8">
@@ -126,10 +138,10 @@ export default function Webstore() {
               UMKM Pilihan Terbaik
             </div>
             <h1 className="text-6xl lg:text-7xl font-black text-gray-900 leading-[1.1] mb-8">
-              Kualitas <span className="text-indigo-600">Premium</span> Dari Alam Untuk Anda.
+              {settings.appName.split(' ').slice(0, -1).join(' ')} <span className="text-indigo-600">{settings.appName.split(' ').pop()}</span> Premium.
             </h1>
             <p className="text-xl text-gray-500 mb-10 leading-relaxed max-w-lg">
-              Nikmati produk makanan dan minuman pilihan terbaik dari UMKM lokal dengan kualitas yang terjamin dan rasa yang otentik.
+              {settings.appDescription}
             </p>
             <div className="flex flex-wrap gap-4">
               <a href="#produk" className="btn-primary flex items-center gap-2 px-8 py-4 text-lg">
@@ -208,26 +220,30 @@ export default function Webstore() {
                 key={product.id}
                 className="premium-card group"
               >
-                <div className="aspect-square overflow-hidden rounded-t-[2.5rem] relative">
-                  <img 
-                    src={product.image} 
-                    alt={product.name} 
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                    referrerPolicy="no-referrer"
-                  />
-                  <div className="absolute top-6 right-6 px-4 py-1.5 bg-white/90 backdrop-blur rounded-full text-xs font-bold text-indigo-600 shadow-sm">
-                    {product.category}
+                <Link to={`/product/${product.id}`} className="block">
+                  <div className="aspect-square overflow-hidden rounded-t-[2.5rem] relative">
+                    <img 
+                      src={product.image} 
+                      alt={product.name} 
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute top-6 right-6 px-4 py-1.5 bg-white/90 backdrop-blur rounded-full text-xs font-bold text-indigo-600 shadow-sm">
+                      {product.category}
+                    </div>
                   </div>
-                </div>
+                </Link>
                 <div className="p-8">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">{product.name}</h3>
+                  <Link to={`/product/${product.id}`} className="block">
+                    <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors">{product.name}</h3>
+                  </Link>
                   <p className="text-sm text-gray-500 mb-6 line-clamp-2 leading-relaxed">
                     {product.description}
                   </p>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Harga</p>
-                      <p className="text-2xl font-black text-gray-900">Rp {product.price.toLocaleString('id-ID')}</p>
+                      <p className="text-2xl font-black text-gray-900">Rp {calculateSellingPrice(product.purchasePrice).toLocaleString('id-ID')}</p>
                     </div>
                     <button 
                       onClick={() => addToCart(product)}
@@ -291,18 +307,20 @@ export default function Webstore() {
                 ) : (
                   cart.map(item => (
                     <div key={item.id} className="flex gap-6">
-                      <div className="w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0 border border-gray-100">
+                      <Link to={`/product/${item.id}`} className="w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0 border border-gray-100 block">
                         <img 
                           src={item.image} 
                           alt={item.name} 
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
                           referrerPolicy="no-referrer"
                         />
-                      </div>
+                      </Link>
                       <div className="flex-1 flex flex-col justify-between py-1">
                         <div>
-                          <h4 className="font-bold text-gray-900 mb-1">{item.name}</h4>
-                          <p className="text-sm font-bold text-indigo-600">Rp {item.price.toLocaleString('id-ID')}</p>
+                          <Link to={`/product/${item.id}`}>
+                            <h4 className="font-bold text-gray-900 mb-1 hover:text-indigo-600 transition-colors">{item.name}</h4>
+                          </Link>
+                          <p className="text-sm font-bold text-indigo-600">Rp {calculateSellingPrice(item.purchasePrice).toLocaleString('id-ID')}</p>
                         </div>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center bg-gray-100 rounded-xl p-1">
@@ -395,7 +413,7 @@ export default function Webstore() {
                   </div>
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-gray-400 font-bold uppercase tracking-widest">Atas Nama</span>
-                    <span className="text-gray-900 font-black">Toko Berkah Jaya</span>
+                    <span className="text-gray-900 font-black">{settings.appName}</span>
                   </div>
                   <div className="pt-4 border-t border-gray-200 flex justify-between items-center">
                     <span className="text-gray-400 font-bold text-xs uppercase tracking-widest">Total Bayar</span>
@@ -441,7 +459,7 @@ export default function Webstore() {
                   <div className="w-16 h-16 bg-green-500 rounded-2xl flex items-center justify-center text-white mx-auto mb-6 print:hidden">
                     <Star className="w-8 h-8 fill-white" />
                   </div>
-                  <h2 className="text-2xl font-black text-gray-900 uppercase">Toko Berkah Jaya</h2>
+                  <h2 className="text-2xl font-black text-gray-900 uppercase">{settings.appName}</h2>
                   <p className="text-sm text-gray-400 font-bold uppercase tracking-[0.2em] mt-1">Struk Pembayaran Sah</p>
                 </div>
 
@@ -461,9 +479,9 @@ export default function Webstore() {
                     <div key={item.id} className="flex justify-between items-start">
                       <div className="flex-1">
                         <p className="font-bold text-gray-900">{item.name}</p>
-                        <p className="text-xs text-gray-400">{item.quantity} x Rp {item.price.toLocaleString('id-ID')}</p>
+                        <p className="text-xs text-gray-400">{item.quantity} x Rp {calculateSellingPrice(item.purchasePrice).toLocaleString('id-ID')}</p>
                       </div>
-                      <p className="font-bold text-gray-900">Rp {(item.price * item.quantity).toLocaleString('id-ID')}</p>
+                      <p className="font-bold text-gray-900">Rp {(calculateSellingPrice(item.purchasePrice) * item.quantity).toLocaleString('id-ID')}</p>
                     </div>
                   ))}
                 </div>
@@ -505,10 +523,10 @@ export default function Webstore() {
               <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center">
                 <Store className="text-white w-6 h-6" />
               </div>
-              <span className="text-xl font-black tracking-tight">BERKAH JAYA</span>
+              <span className="text-xl font-black tracking-tight uppercase">{settings.appName}</span>
             </div>
             <p className="text-gray-400 leading-relaxed">
-              Menyediakan produk UMKM berkualitas tinggi dengan rasa yang otentik dan harga yang terjangkau.
+              {settings.appDescription}
             </p>
           </div>
 
@@ -544,7 +562,7 @@ export default function Webstore() {
           </div>
         </div>
         <div className="max-w-7xl mx-auto pt-16 mt-16 border-t border-white/10 text-center text-gray-500 text-sm">
-          <p>&copy; 2024 Toko Berkah Jaya. Seluruh hak cipta dilindungi.</p>
+          <p>&copy; {new Date().getFullYear()} {settings.appName}. Seluruh hak cipta dilindungi.</p>
         </div>
       </footer>
     </div>

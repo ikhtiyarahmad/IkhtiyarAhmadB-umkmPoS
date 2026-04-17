@@ -1,11 +1,19 @@
 export interface Product {
   id: string;
   name: string;
-  price: number;
+  purchasePrice: number;
+  sellingPrice: number;
   stock: number;
   category: string;
   image: string;
   description?: string;
+}
+
+export interface AppSettings {
+  appName: string;
+  appDescription: string;
+  marginType: 'percentage' | 'nominal';
+  marginValue: number;
 }
 
 export interface CartItem extends Product {

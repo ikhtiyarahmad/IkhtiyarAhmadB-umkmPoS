@@ -1,16 +1,30 @@
 import React, { useState } from 'react';
 import { Search, ShoppingCart, Trash2, Plus, Minus, CreditCard, Wallet, Banknote } from 'lucide-react';
-import { MOCK_PRODUCTS } from '../mockData';
-import { CartItem, Product } from '../types';
+import { MOCK_PRODUCTS, DEFAULT_SETTINGS } from '../mockData';
+import { AppSettings, CartItem, Product } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function PoS() {
+  const [settings] = useState<AppSettings>(() => {
+    const saved = localStorage.getItem('app_settings');
+    return saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
+  });
+
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
   const [lastOrder, setLastOrder] = useState<{ items: CartItem[], total: number, id: string } | null>(null);
 
-  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const calculateSellingPrice = (purchasePrice: number) => {
+    return settings.marginType === 'percentage'
+      ? purchasePrice * (1 + settings.marginValue / 100)
+      : purchasePrice + settings.marginValue;
+  };
+
+  const subtotal = cart.reduce((sum, item) => {
+    const sPrice = calculateSellingPrice(item.purchasePrice);
+    return sum + (sPrice * item.quantity);
+  }, 0);
   const tax = subtotal * 0.1;
   const total = subtotal + tax;
 
@@ -95,7 +109,7 @@ export default function PoS() {
               </div>
               <p className="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-1">{product.category}</p>
               <h3 className="font-bold text-gray-900 mb-1">{product.name}</h3>
-              <p className="text-lg font-black text-gray-900">Rp {product.price.toLocaleString('id-ID')}</p>
+              <p className="text-lg font-black text-gray-900">Rp {calculateSellingPrice(product.purchasePrice).toLocaleString('id-ID')}</p>
             </motion.div>
           ))}
         </div>
@@ -142,7 +156,7 @@ export default function PoS() {
                   />
                   <div className="flex-1 min-w-0">
                     <h4 className="font-bold text-gray-900 truncate">{item.name}</h4>
-                    <p className="text-sm text-gray-500">Rp {item.price.toLocaleString('id-ID')}</p>
+                    <p className="text-sm text-gray-500">Rp {calculateSellingPrice(item.purchasePrice).toLocaleString('id-ID')}</p>
                   </div>
                   <div className="flex flex-col items-end gap-2">
                     <div className="flex items-center bg-gray-50 rounded-lg p-1">
@@ -161,7 +175,7 @@ export default function PoS() {
                       </button>
                     </div>
                     <p className="text-sm font-bold text-gray-900">
-                      Rp {(item.price * item.quantity).toLocaleString('id-ID')}
+                      Rp {(calculateSellingPrice(item.purchasePrice) * item.quantity).toLocaleString('id-ID')}
                     </p>
                   </div>
                 </motion.div>
@@ -225,7 +239,7 @@ export default function PoS() {
               id="admin-receipt"
             >
               <div className="text-center mb-8">
-                <h2 className="text-xl font-black text-gray-900 uppercase">BERKAH JAYA</h2>
+                <h2 className="text-xl font-black text-gray-900 uppercase">{settings.appName}</h2>
                 <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">ADMIN PoS RECEIPT</p>
               </div>
 
@@ -244,7 +258,7 @@ export default function PoS() {
                 {lastOrder.items.map(item => (
                   <div key={item.id} className="flex justify-between text-sm">
                     <span className="text-gray-900 font-medium">{item.name} x{item.quantity}</span>
-                    <span className="font-bold">Rp {(item.price * item.quantity).toLocaleString('id-ID')}</span>
+                    <span className="font-bold">Rp {(calculateSellingPrice(item.purchasePrice) * item.quantity).toLocaleString('id-ID')}</span>
                   </div>
                 ))}
               </div>
